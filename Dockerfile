@@ -3,22 +3,19 @@ FROM node:22-bookworm-slim
 
 WORKDIR /app
 
-# Activer et préparer pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Copie des fichiers de dépendances npm
+COPY package.json package-lock.json* ./
 
-# Copie uniquement des fichiers de configuration indispensables
-COPY package.json pnpm-lock.yaml ./
+# Installation des dépendances avec npm
+RUN npm install
 
-# Installation des dépendances sans bloquer sur le verrouillage stricts
-RUN pnpm install --no-frozen-lockfile
-
-# Copie du reste des fichiers de l'application
+# Copie de l'intégralité du projet
 COPY . .
 
-# Build du projet
-RUN pnpm build
+# Compilation de l'application
+RUN npm run build --if-present
 
-# Variables d'environnement pour la production
+# Variables d'environnement
 ENV NODE_ENV=production
 ENV PORT=3000
 
@@ -26,5 +23,6 @@ EXPOSE 3000
 
 # Lancement de l'application
 CMD ["node", "dist/index.js"]
+
 
 
